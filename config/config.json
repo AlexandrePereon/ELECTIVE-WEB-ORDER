@@ -1,0 +1,19 @@
+{
+  "test":{
+    "PORT": 3001,
+    "MONGODB_URI": "mongodb://mongo:27017/TodoAppTest"
+  },
+  "local":{
+    "PORT": 3001,
+    "MONGODB_URI": "mongodb://localhost:27017/CesiEat",
+    "BASE_URI" : "http://localhost:3001",
+    "BASE_ENDPOINT" : "/restaurant"
+
+  },
+  "production":{
+    "PORT": 3001,
+    "MONGODB_URI": "mongodb://mongo:27017/CesiEat",
+    "BASE_URI" : "http://app.localhost",
+    "BASE_ENDPOINT" : "/restaurant"
+  }
+}
