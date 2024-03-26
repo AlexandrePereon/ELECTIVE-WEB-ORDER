@@ -4,7 +4,6 @@ class OrderSub {
   }
 
   subscribe(event, callback) {
-    console.log('Subscribing to event', event);
     if (!this.subscribers[event]) {
       this.subscribers[event] = [];
     }
@@ -12,7 +11,6 @@ class OrderSub {
   }
 
   publish(event, data) {
-    console.log('Publishing event', event, data);
     if (this.subscribers[event]) {
       this.subscribers[event].forEach((callback) => {
         callback(data);
@@ -21,7 +19,6 @@ class OrderSub {
   }
 
   unsubscribe(event, callback) {
-    console.log('Unsubscribing from event', event);
     if (this.subscribers[event]) {
       this.subscribers[event] = this.subscribers[event].filter((sub) => sub !== callback);
     }

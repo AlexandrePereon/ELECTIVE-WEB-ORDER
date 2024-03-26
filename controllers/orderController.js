@@ -11,4 +11,9 @@ const orderController = {
   },
 };
 
-export default orderController;
+const handleOrderFactory = (ws) => (order) => {
+  console.log('Order handled', order);
+  ws.send(JSON.stringify(order));
+};
+
+export { orderController, handleOrderFactory };
