@@ -10,10 +10,10 @@ import connect from './db/index.js';
 import routes from './routes/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const app = express();
+const sockerServer = expressWs(express());
+const { app } = sockerServer;
 
 // connection from db here
-
 connect(app);
 
 app.use(cors());
@@ -22,19 +22,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-expressWs(app);
-
-const sockerRoute = express.Router();
-
-sockerRoute.ws('/', (ws, req) => {
-  ws.on('message', (msg) => {
-    console.log(msg, req);
-  });
-});
-
 //  adding routes
 app.use(process.env.BASE_ENDPOINT, routes);
-app.use('/socket', sockerRoute);
 
 app.on('ready', () => {
   app.listen(process.env.PORT, () => {
