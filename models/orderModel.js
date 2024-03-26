@@ -1,15 +1,14 @@
 import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
-const Restaurant = mongoose.model('Order', {
-  // Customer, deliman, restaurant, date ordered, date delivered, status, total price
-  customer_id: {
+const Order = mongoose.model('Order', {
+  user_id: {
     type: Number,
     required: true,
     unique: true,
     trim: true,
   },
-  deliman_id: {
+  deliveryman_id: {
     type: Number,
     required: false,
     unique: true,
@@ -25,7 +24,7 @@ const Restaurant = mongoose.model('Order', {
   },
   date_delivered: {
     type: Date,
-    required: true,
+    required: false,
   },
   status: {
     type: String,
@@ -33,6 +32,36 @@ const Restaurant = mongoose.model('Order', {
     trim: true,
     enum: ['En Attente', 'Acceptée', 'Préparée', 'En Livraison', 'Livrée', 'Annulée'],
   },
+  menus: [{
+    menu_name: {
+      type: String,
+      required: true,
+    },
+    articles: [{
+      article_name: {
+        type: String,
+        required: true,
+      },
+    }],
+    menu_price: {
+      type: String,
+      required: true,
+    },
+  }],
+  articles: [{
+    article_name: {
+      type: String,
+      required: true,
+    },
+    article_price: {
+      type: String,
+      required: true,
+    },
+  }],
+  total_price: {
+    type: Number,
+    required: true,
+  },
 });
 
-export default Restaurant;
+export default Order;

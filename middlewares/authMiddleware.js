@@ -9,7 +9,7 @@ export default async function authMiddleware(req, res, next) {
       lastName: 'Doe',
       email: 'john.doe@example.com',
       password: 'SecurePassword123!',
-      role: 'restaurant',
+      role: 'user',
     };
   } else if (req.headers['x-user']) {
     userData = JSON.parse(req.headers['x-user']);

@@ -1,9 +1,9 @@
 import express from 'express';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import isUserMiddleware from '../middlewares/isUserMiddleware.js';
 import { orderController } from '../controllers/orderController.js';
-import restaurantMiddleware from '../middlewares/restaurantMiddleware.js';
 
-const restaurantRouter = express.Router();
+const orderRouter = express.Router();
 
 /**
  * @swagger
@@ -12,13 +12,30 @@ const restaurantRouter = express.Router();
  *     summary: Get an article by ID
  *     description: This endpoint retrieves an article by its unique identifier.
  *     tags: [Order]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               menus:
+ *                 type: string
+ *                 example: ['6602bc8fdbbe228cf99bc07f','6602bc8fdbbe228cf99bc07f']
+ *               articles:
+ *                 type: string
+ *                 example: ['6602bc5bdbbe228cf99bc077','6602bc75dbbe228cf99bc07b']
+ *               restaurantId:
+ *                 type: string
+ *                 example: '6602bc45dbbe228cf99bc073'
  *     responses:
  *       200:
  *         description: Successfully retrieved the article
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Article'
  *       404:
  *         description: Article not found
  *         content:
@@ -33,6 +50,6 @@ const restaurantRouter = express.Router();
  *     security:
  *       - BearerAuth: []
  */
-restaurantRouter.post('/create', orderController.create);
+orderRouter.post('/create', authMiddleware, isUserMiddleware, orderController.create);
 
-export default restaurantRouter;
+export default orderRouter;
