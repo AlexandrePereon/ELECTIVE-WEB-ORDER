@@ -30,7 +30,7 @@ const Order = mongoose.model('Order', {
     type: String,
     required: true,
     trim: true,
-    enum: ['En Attente', 'Acceptée', 'Préparée', 'En Livraison', 'Livrée', 'Annulée'],
+    enum: ['En Attente', 'En préparation', 'Préparée', 'En Livraison', 'Livrée', 'Annulée'],
   },
   menus: [{
     menu_name: {

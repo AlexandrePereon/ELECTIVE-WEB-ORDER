@@ -1,12 +1,10 @@
 import OrderSub from '../utils/orderSubscription.js';
 import { sendMarketingData } from './orderController.js';
-import Order from '../models/orderModel.js';
 
 const marketingSocketController = async (ws) => {
   ws.send('Connected to the marketing socket');
 
-  const Orders = await Order.find();
-  ws.send(JSON.stringify(Orders));
+  sendMarketingData(ws)();
 
   ws.on('message', (msg) => {
     ws.send(`Message received: ${msg}`);

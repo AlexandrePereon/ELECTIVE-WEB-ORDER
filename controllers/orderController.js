@@ -66,6 +66,7 @@ const orderController = {
 
       // Notify via websocket
       OrderSub.publish('marketingUpdated');
+      OrderSub.publish(`restaurantUpdated-${restaurantId}`, restaurantId);
 
       return res.status(200).json({ order: neworder, message: 'Commande créée avec succès' });
     } catch (error) {
@@ -76,9 +77,51 @@ const orderController = {
   // PUT /order/accept
 };
 
-const sendMarketingData = (ws) => async () => {
-  const Orders = await Order.find();
-  ws.send(JSON.stringify(Orders));
+const sendMarketingData = (ws) => async (restaurantId) => {
+  let Orders;
+  if (restaurantId) {
+    Orders = await Order.find({ restaurant_id: restaurantId });
+  } else {
+    Orders = await Order.find();
+  }
+
+  if (Orders) {
+  // Nombre de commandes
+    const orderCount = Orders.length;
+
+    const orderCountsByStatus = await Order.aggregate([
+      {
+        $group: {
+          _id: '$status', // Grouper par le champ 'status'
+          count: { $sum: 1 }, // Compter le nombre d'occurrences pour chaque statut
+        },
+      },
+    ]);
+
+    const formattedCounts = orderCountsByStatus.reduce((acc, curr) => {
+      acc[curr._id] = curr.count;
+      return acc;
+    }, {});
+
+    const totalPriceExcludingCancelled = Orders.reduce((acc, order) => {
+      if (order.status !== 'Annulée') {
+      // the order.total_price is a string, so we need to convert it to a number
+        return acc + Number(order.total_price);
+      }
+      return acc;
+    }, 0);
+
+    const marketingData = {
+      orderCount,
+      orderCountsByStatus: formattedCounts,
+      orders: Orders,
+      totalPrice: totalPriceExcludingCancelled,
+    };
+
+    ws.send(JSON.stringify(marketingData));
+  } else {
+    ws.send('Pas de commandes trouvées');
+  }
 };
 
 export { orderController, sendMarketingData };
