@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import expressWs from 'express-ws';
 import connect from './db/index.js';
 import routes from './routes/index.js';
+import prometheusRouter from './routes/prometheusRoutes.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const sockerServer = expressWs(express());
@@ -24,6 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //  adding routes
 app.use(process.env.BASE_ENDPOINT, routes);
+app.use(prometheusRouter);
 
 app.on('ready', () => {
   app.listen(process.env.PORT, () => {
