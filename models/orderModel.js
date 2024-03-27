@@ -59,7 +59,7 @@ const Order = mongoose.model('Order', {
     },
   }],
   total_price: {
-    type: Number,
+    type: String,
     required: true,
   },
 });

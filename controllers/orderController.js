@@ -14,8 +14,9 @@ const orderController = {
     if (!menus.length && !articles.length) {
       return res.status(400).send('No menus or articles provided');
     }
+
     try {
-    // Get the restaurant
+      // Get the restaurant
       const restaurant = await Restaurant.findById(restaurantId);
 
       // Check if the restaurant exists
@@ -24,8 +25,17 @@ const orderController = {
       }
 
       // Get the menus and articles by their IDs and the restaurant
-      const menusRestaurant = [...new Set(await Menu.find({ _id: { $in: menus }, restaurantId }).populate('articles'))];
-      const articlesRestaurant = [...new Set(await Article.find({ _id: { $in: articles }, restaurantId }))];
+      const menusRestaurant = [...new Set(await Menu.find({ _id: { $in: menus }, restaurant_id: restaurantId }).populate('articles'))];
+      const articlesRestaurant = [...new Set(await Article.find({ _id: { $in: articles }, restaurant_id: restaurantId }))];
+
+      // Sum the prices of the menus and articles
+      const menusPrice = menusRestaurant.reduce((acc, menu) => acc + menu.price, 0);
+      const articlesPrice = articlesRestaurant.reduce((acc, article) => acc + article.price, 0);
+
+      // Check if all products are from the same restaurant
+      if (menusRestaurant.length !== new Set(menus).size || articlesRestaurant.length !== new Set(articles).size) {
+        return res.status(400).send('All products must be from the same restaurant');
+      }
 
       const transformedMenus = menusRestaurant.map((menu) => ({
         menu_name: menu.name,
@@ -39,15 +49,6 @@ const orderController = {
         article_name: article.name,
         article_price: article.price,
       }));
-
-      // Sum the prices of the menus and articles
-      const menusPrice = menusRestaurant.reduce((acc, menu) => acc + menu.price, 0);
-      const articlesPrice = articlesRestaurant.reduce((acc, article) => acc + article.price, 0);
-
-      // Check if all products are from the same restaurant
-      if (menusRestaurant.length !== new Set(menus).size || articlesRestaurant.length !== new Set(articles).size) {
-        return res.status(400).send('All products must be from the same restaurant');
-      }
 
       // Create the order
       const order = new Order({
@@ -63,6 +64,9 @@ const orderController = {
       // Save the order
       const neworder = await order.save();
 
+      // Notify via websocket
+      OrderSub.publish('marketingUpdated');
+
       return res.status(200).json({ order: neworder, message: 'Commande créée avec succès' });
     } catch (error) {
       console.error(error);
@@ -72,9 +76,9 @@ const orderController = {
   // PUT /order/accept
 };
 
-const handleOrderFactory = (ws) => (order) => {
-  console.log('Order handled', order);
-  ws.send(JSON.stringify(order));
+const sendMarketingData = (ws) => async () => {
+  const Orders = await Order.find();
+  ws.send(JSON.stringify(Orders));
 };
 
-export { orderController, handleOrderFactory };
+export { orderController, sendMarketingData };

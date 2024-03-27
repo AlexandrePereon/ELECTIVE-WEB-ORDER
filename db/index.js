@@ -9,6 +9,7 @@ const connect = (app) => {
 
   const connectWithRetry = () => {
     mongoose.Promise = global.Promise;
+    mongoose.set('strictQuery', true);
     console.log('MongoDB connection with retry');
     mongoose
       .connect(process.env.MONGODB_URI, options)
