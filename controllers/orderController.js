@@ -188,9 +188,9 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // PUT /order/delivered
-  delivered: async (req, res) => {
-    // The deliveryman has delivered the order
+  // PUT /order/received
+  received: async (req, res) => {
+    // The client receives the order
     const { orderId } = req.body;
 
     try {
@@ -202,9 +202,9 @@ const orderController = {
         return res.status(404).send('Commande non trouvée');
       }
 
-      // Check if the order is handled by the deliveryman
-      if (order.deliveryman_id.toString() !== req.deliveryman._id.toString()) {
-        return res.status(400).send('Cette commande n\'est pas gérée par ce livreur');
+      // Check if the user is the owner of the order
+      if (order.user_id.toString() !== req.userData.id.toString()) {
+        return res.status(400).send('Vous n\'êtes pas autorisé à effectuer cette action');
       }
 
       // Check if the order is not already delivered
