@@ -80,8 +80,6 @@ const orderController = {
     const { orderId } = req.body;
     const restaurantId = req.restaurant._id;
 
-    console.log(req.body);
-
     try {
       // Find the order
       const order = await Order.findById(orderId);
@@ -97,8 +95,8 @@ const orderController = {
       }
 
       // Check if the order is not already accepted
-      if (order.status === 'En préparation') {
-        return res.status(400).send('La commande est déjà en cours de préparation');
+      if (order.status !== 'En Attente') {
+        return res.status(400).send('La commande n\'est pas en attente');
       }
 
       // Update the order status
@@ -110,6 +108,119 @@ const orderController = {
       OrderSub.publish(`restaurantUpdated-${restaurantId}`, restaurantId);
 
       return res.status(200).send('Commande acceptée avec succès');
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send('Internal server error');
+    }
+  },
+  // PUT /order/prepared
+  complete: async (req, res) => {
+    // The restaurant has prepared the order
+    const { orderId } = req.body;
+    const restaurantId = req.restaurant._id;
+
+    try {
+      // Find the order
+      const order = await Order.findById(orderId);
+
+      // Check if the order exists
+      if (!order) {
+        return res.status(404).send('Commande non trouvée');
+      }
+
+      // Check if the order is from the same restaurant
+      if (order.restaurant_id.toString() !== restaurantId.toString()) {
+        return res.status(400).send('Cette commande n\'appartient pas à ce restaurant');
+      }
+
+      // Check if the order is not already prepared
+      if (order.status !== 'En préparation') {
+        return res.status(400).send('La commande n\'est pas en préparation');
+      }
+
+      // Update the order status
+      order.status = 'Préparée';
+      await order.save();
+
+      // Notify via websocket
+      OrderSub.publish('marketingUpdated');
+      OrderSub.publish(`restaurantUpdated-${restaurantId}`, restaurantId);
+
+      return res.status(200).send('Commande préparée avec succès');
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send('Internal server error');
+    }
+  },
+  // PUT /order/deliver
+  deliver: async (req, res) => {
+    // The deliveryman delivers the order
+    const { orderId } = req.body;
+    const deliverymanId = req.deliveryman._id;
+
+    try {
+      // Find the order
+      const order = await Order.findById(orderId);
+
+      // Check if the order exists
+      if (!order) {
+        return res.status(404).send('Commande non trouvée');
+      }
+
+      // Check if the order is not already delivered
+      if (order.status !== 'Préparée') {
+        return res.status(400).send('La commande n\'est pas préparée');
+      }
+
+      // Update the order status
+      order.status = 'En Livraison';
+      order.date_delivered = new Date();
+      order.deliveryman_id = deliverymanId;
+      await order.save();
+
+      // Notify via websocket
+      OrderSub.publish('marketingUpdated');
+      OrderSub.publish(`restaurantUpdated-${order.restaurant_id}`, order.restaurant_id);
+
+      return res.status(200).send('Commande en cours de livraison');
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send('Internal server error');
+    }
+  },
+  // PUT /order/delivered
+  delivered: async (req, res) => {
+    // The deliveryman has delivered the order
+    const { orderId } = req.body;
+
+    try {
+      // Find the order
+      const order = await Order.findById(orderId);
+
+      // Check if the order exists
+      if (!order) {
+        return res.status(404).send('Commande non trouvée');
+      }
+
+      // Check if the order is handled by the deliveryman
+      if (order.deliveryman_id.toString() !== req.deliveryman._id.toString()) {
+        return res.status(400).send('Cette commande n\'est pas gérée par ce livreur');
+      }
+
+      // Check if the order is not already delivered
+      if (order.status !== 'En Livraison') {
+        return res.status(400).send('La commande n\'est pas en livraison');
+      }
+
+      // Update the order status
+      order.status = 'Livrée';
+      await order.save();
+
+      // Notify via websocket
+      OrderSub.publish('marketingUpdated');
+      OrderSub.publish(`restaurantUpdated-${order.restaurant_id}`, order.restaurant_id);
+
+      return res.status(200).send('Commande livrée avec succès');
     } catch (error) {
       console.error(error);
       return res.status(500).send('Internal server error');

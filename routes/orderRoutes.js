@@ -97,7 +97,7 @@ orderRouter.post('/create', authMiddleware, isUserMiddleware, orderController.cr
 /**
  * @swagger
  * /order/accept/:
- *   post:
+ *   put:
  *     summary: Accept an order
  *     description: This endpoint allows a restaurant to accept an order by its ID. It verifies that the order exists, checks if the order belongs to the restaurant making the request, and ensures the order has not been previously accepted before updating its status.
  *     tags: [Order]
@@ -161,6 +161,6 @@ orderRouter.post('/create', authMiddleware, isUserMiddleware, orderController.cr
  *                   description: Detailed error message.
  *                   example: 'Internal server error'
  */
-orderRouter.post('/accept', authMiddleware, isRestaurantMiddleware, hasRestaurantMiddleware, orderController.accept);
+orderRouter.put('/accept', authMiddleware, isRestaurantMiddleware, hasRestaurantMiddleware, orderController.accept);
 
 export default orderRouter;
