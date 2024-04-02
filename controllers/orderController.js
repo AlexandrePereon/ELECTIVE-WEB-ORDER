@@ -3,6 +3,7 @@ import OrderSub from '../utils/orderSubscription.js';
 import Menu from '../models/menuModel.js';
 import Article from '../models/articleModel.js';
 import Restaurant from '../models/restaurantModel.js';
+import Notification from '../models/notificationModel.js';
 
 const orderController = {
   // POST /order/create
@@ -67,6 +68,9 @@ const orderController = {
       // Notify via websocket
       OrderSub.publish('marketingUpdated');
       OrderSub.publish(`restaurantUpdated-${restaurantId}`, restaurantId);
+
+      const notificationMessage = `Nouvelle commande n°${neworder._id} pour un montant de ${neworder.total_price}€`;
+      OrderSub.publish(`sendNotification${restaurant.createur_id}`, restaurant.createur_id, notificationMessage);
 
       return res.status(200).json({ order: neworder._id, message: 'Commande créée avec succès' });
     } catch (error) {
@@ -182,4 +186,30 @@ const sendMarketingData = (ws) => async (restaurantId) => {
   }
 };
 
-export { orderController, sendMarketingData };
+const sendNotifications = (ws) => async (userId) => {
+  const notifications = await Notification.find({ user_id: userId, read: false });
+
+  if (notifications && notifications.length > 0) {
+    ws.send(JSON.stringify(notifications));
+  } else {
+    ws.send('Pas de notifications');
+  }
+};
+
+const sendNotification = (ws) => async (userId, message) => {
+  // Créer une nouvelle notification
+  const notification = new Notification({
+    user_id: userId,
+    message,
+  });
+
+  // Enregistrer la notification
+  await notification.save();
+
+  // Envoyer les notifications
+  sendNotifications(ws)(userId);
+};
+
+export {
+  orderController, sendMarketingData, sendNotification, sendNotifications,
+};
