@@ -9,7 +9,6 @@ const restaurantSocketController = async (ws, req) => {
   OrderSub.subscribe(`restaurantUpdated-${restaurant._id}`, sendMarketingData(ws));
 
   ws.on('close', () => {
-    ws.send('Connection closed');
     OrderSub.unsubscribe(`restaurantUpdated-${restaurant._id}`, sendMarketingData(ws));
   });
 };

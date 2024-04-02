@@ -7,7 +7,6 @@ const marketingSocketController = async (ws) => {
   OrderSub.subscribe('marketingUpdated', sendMarketingData(ws));
 
   ws.on('close', () => {
-    ws.send('Connection closed');
     OrderSub.unsubscribe('marketingUpdated', sendMarketingData(ws));
   });
 };
