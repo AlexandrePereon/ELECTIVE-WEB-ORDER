@@ -10,10 +10,10 @@ class OrderSub {
     this.subscribers[event].push(callback);
   }
 
-  publish(event, data) {
+  publish(event, ...args) {
     if (this.subscribers[event]) {
       this.subscribers[event].forEach((callback) => {
-        callback(data);
+        callback(...args);
       });
     }
   }
