@@ -125,11 +125,14 @@ const sendMarketingData = (ws) => async (restaurantId) => {
     Orders = await Order.find();
   }
 
-  if (Orders) {
-  // Nombre de commandes
+  if (Orders && Orders.length > 0) {
+    // Nombre de commandes
     const orderCount = Orders.length;
 
     const orderCountsByStatus = await Order.aggregate([
+      {
+        $match: restaurantId ? { restaurant_id: restaurantId } : {}, // Filtrer par restaurantId si spécifié
+      },
       {
         $group: {
           _id: '$status', // Grouper par le champ 'status'
@@ -145,17 +148,32 @@ const sendMarketingData = (ws) => async (restaurantId) => {
 
     const totalPriceExcludingCancelled = Orders.reduce((acc, order) => {
       if (order.status !== 'Annulée') {
-      // the order.total_price is a string, so we need to convert it to a number
+        // La valeur de order.total_price est une chaîne, donc nous devons la convertir en nombre
         return acc + Number(order.total_price);
       }
       return acc;
     }, 0);
 
+    // Résumé quotidien
+    const dailySummary = await Order.aggregate([
+      {
+        $match: restaurantId ? { restaurant_id: restaurantId } : {},
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$date_ordered' } }, // Grouper par jour
+          dailyOrderCount: { $sum: 1 }, // Compter le nombre de commandes pour chaque jour
+          dailyTotalPrice: { $sum: { $toDouble: '$total_price' } }, // Somme des prix pour le jour
+        },
+      },
+      { $sort: { _id: 1 } }, // Trier par date
+    ]);
+
     const marketingData = {
       orderCount,
       orderCountsByStatus: formattedCounts,
-      orders: Orders,
       totalPrice: totalPriceExcludingCancelled,
+      dailySummary, // Remplace la liste complète des commandes par le résumé quotidien
     };
 
     ws.send(JSON.stringify(marketingData));
