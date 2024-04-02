@@ -114,7 +114,7 @@ const orderController = {
     }
   },
   // PUT /order/prepared
-  complete: async (req, res) => {
+  prepared: async (req, res) => {
     // The restaurant has prepared the order
     const { orderId } = req.body;
     const restaurantId = req.restaurant._id;
@@ -188,8 +188,8 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // PUT /order/received
-  received: async (req, res) => {
+  // PUT /order/receive
+  receive: async (req, res) => {
     // The client receives the order
     const { orderId } = req.body;
 
