@@ -1,5 +1,5 @@
 import OrderSub from '../utils/orderSubscription.js';
-import { sendMarketingData } from './orderController.js';
+import { sendMarketingData } from './marketingController.js';
 
 const restaurantSocketController = async (ws, req) => {
   const { restaurant } = req;

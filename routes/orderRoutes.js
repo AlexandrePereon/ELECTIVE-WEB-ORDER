@@ -3,7 +3,7 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 import isUserMiddleware from '../middlewares/isUserMiddleware.js';
 import isRestaurantMiddleware from '../middlewares/isRestaurantMiddleware.js';
 import hasRestaurantMiddleware from '../middlewares/hasRestaurantMiddleware.js';
-import { orderController } from '../controllers/orderController.js';
+import orderController from '../controllers/orderController.js';
 import isdDeliverymanMiddleware from '../middlewares/isDeliverymanMiddleware.js';
 
 const orderRouter = express.Router();
