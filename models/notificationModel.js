@@ -18,10 +18,9 @@ const Notification = mongoose.model('Notification', {
     trim: true,
     default: Date.now,
   },
-  status: {
-    type: Boolean,
-    required: true,
-    default: false,
+  seen: {
+    type: Date,
+    default: null,
   },
 });
 
