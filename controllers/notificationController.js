@@ -43,4 +43,21 @@ const notificationSocketController = async (ws, req) => {
   });
 };
 
-export default notificationSocketController;
+const notificationController = {
+// PUT /order/notified
+  notified: async (req, res) => {
+  // Change all notifications from a user to seen
+    const { id } = req.body.userData;
+
+    try {
+    // Find the notifications
+      await Notification.updateMany({ user_id: id, seen: null }, { seen: new Date() });
+
+      return res.status(200).send('Notifications marquées comme lues');
+    } catch (error) {
+      return res.status(500).send('Internal server error');
+    }
+  },
+};
+
+export { notificationSocketController, notificationController };
