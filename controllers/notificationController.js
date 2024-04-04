@@ -17,7 +17,7 @@ const sendNotifications = (ws) => async (userId) => {
   }
 };
 
-const sendNotification = (ws) => async (userId, message) => {
+const createNotification = async (userId, message) => {
   // Créer une nouvelle notification
   const notification = new Notification({
     user_id: userId,
@@ -27,8 +27,8 @@ const sendNotification = (ws) => async (userId, message) => {
   // Enregistrer la notification
   await notification.save();
 
-  // Envoyer les notifications
-  sendNotifications(ws)(userId);
+  // Envoyer la notification
+  OrderSub.publish(`sendNotifications${userId}`, userId);
 };
 
 const notificationSocketController = async (ws, req) => {
@@ -36,10 +36,10 @@ const notificationSocketController = async (ws, req) => {
 
   sendNotifications(ws)(id);
 
-  OrderSub.subscribe(`sendNotification${id}`, sendNotification(ws));
+  OrderSub.subscribe(`sendNotifications${id}`, sendNotifications(ws));
 
   ws.on('close', () => {
-    OrderSub.unsubscribe(`sendNotification${id}`, sendNotification(ws));
+    OrderSub.unsubscribe(`sendNotifications${id}`, sendNotifications(ws));
   });
 };
 
@@ -60,4 +60,4 @@ const notificationController = {
   },
 };
 
-export { notificationSocketController, notificationController };
+export { notificationSocketController, notificationController, createNotification };
