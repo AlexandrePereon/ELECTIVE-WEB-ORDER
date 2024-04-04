@@ -1,7 +1,15 @@
+import mongoose from 'mongoose';
 import OrderSub from '../utils/orderSubscription.js';
 import Order from '../models/orderModel.js';
 
-const sendMarketingData = (ws) => async (restaurantId) => {
+const { ObjectId } = mongoose.Types;
+
+const sendMarketingData = (ws) => async (restaurantID) => {
+  let restaurantId = restaurantID;
+  if (restaurantId && typeof restaurantId === 'string') {
+    restaurantId = new ObjectId(restaurantId);
+  }
+
   let Orders;
   if (restaurantId) {
     Orders = await Order.find({ restaurant_id: restaurantId });
@@ -66,6 +74,11 @@ const sendMarketingData = (ws) => async (restaurantId) => {
   }
 };
 
+const updatedMarketingData = async (restaurantId) => {
+  OrderSub.publish('marketingUpdated');
+  OrderSub.publish(`restaurantUpdated-${restaurantId}`, restaurantId);
+};
+
 const marketingSocketController = async (ws) => {
   sendMarketingData(ws)();
 
@@ -76,4 +89,4 @@ const marketingSocketController = async (ws) => {
   });
 };
 
-export { sendMarketingData, marketingSocketController };
+export { sendMarketingData, marketingSocketController, updatedMarketingData };

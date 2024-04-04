@@ -1,9 +1,9 @@
 import Order from '../models/orderModel.js';
-import OrderSub from '../utils/orderSubscription.js';
 import Menu from '../models/menuModel.js';
 import Article from '../models/articleModel.js';
 import Restaurant from '../models/restaurantModel.js';
 import { createNotification } from './notificationController.js';
+import { updatedMarketingData } from './marketingController.js';
 
 const orderController = {
   // POST /order/create
@@ -66,11 +66,9 @@ const orderController = {
       const neworder = await order.save();
 
       // Notify via websocket
-      OrderSub.publish('marketingUpdated');
-      OrderSub.publish(`restaurantUpdated-${restaurantId}`, restaurantId);
-
       const notificationMessage = `Nouvelle commande n°${neworder._id} pour un montant de ${neworder.total_price}€`;
       createNotification(restaurant.createur_id, notificationMessage);
+      updatedMarketingData(restaurantId);
 
       return res.status(200).json({ order: neworder._id, message: 'Commande créée avec succès' });
     } catch (error) {
@@ -107,11 +105,9 @@ const orderController = {
       await order.save();
 
       // Notify via websocket
-      OrderSub.publish('marketingUpdated');
-      OrderSub.publish(`restaurantUpdated-${restaurantId}`, restaurantId);
-
       const notificationMessage = `Votre commande n°${order._id} a été acceptée`;
       createNotification(order.user_id, notificationMessage);
+      updatedMarketingData(restaurantId);
 
       return res.status(200).send('Commande acceptée avec succès');
     } catch (error) {
@@ -148,11 +144,9 @@ const orderController = {
       await order.save();
 
       // Notify via websocket
-      OrderSub.publish('marketingUpdated');
-      OrderSub.publish(`restaurantUpdated-${restaurantId}`, restaurantId);
-
       const notificationMessage = `Votre commande n°${order._id} à été préparée`;
       createNotification(order.user_id, notificationMessage);
+      updatedMarketingData(restaurantId);
 
       return res.status(200).send('Commande préparée avec succès');
     } catch (error) {
@@ -186,11 +180,9 @@ const orderController = {
       await order.save();
 
       // Notify via websocket
-      OrderSub.publish('marketingUpdated');
-      OrderSub.publish(`restaurantUpdated-${order.restaurant_id}`, order.restaurant_id);
-
       const notificationMessage = `Votre commande n°${order._id} est en cours de livraison`;
       createNotification(order.user_id, notificationMessage);
+      updatedMarketingData(order.restaurant_id);
 
       return res.status(200).send('Commande en cours de livraison');
     } catch (error) {
@@ -226,11 +218,9 @@ const orderController = {
       await order.save();
 
       // Notify via websocket
-      OrderSub.publish('marketingUpdated');
-      OrderSub.publish(`restaurantUpdated-${order.restaurant_id}`, order.restaurant_id);
-
       const notificationMessage = `Votre commande n°${order._id} a été livrée`;
       createNotification(order.restaurant_id, notificationMessage);
+      updatedMarketingData(order.restaurant_id);
 
       return res.status(200).send('Commande livrée avec succès');
     } catch (error) {
