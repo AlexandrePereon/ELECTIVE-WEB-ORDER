@@ -18,6 +18,7 @@ const sendNotifications = (ws) => async (userId) => {
 };
 
 const createNotification = async (userId, message) => {
+  if (!userId || !message) return;
   // Créer une nouvelle notification
   const notification = new Notification({
     user_id: userId,

@@ -113,7 +113,7 @@ const orderController = {
       await order.save();
 
       // Notify via websocket
-      const notificationMessage = `la commande n°${order._id} a été acceptée`;
+      const notificationMessage = `La commande n°${order._id} a été acceptée`;
       createNotifications([order.user_id, restaurant.createur_id], notificationMessage);
       updatedMarketingData(restaurantId);
 
