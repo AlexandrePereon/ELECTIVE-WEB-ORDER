@@ -32,7 +32,6 @@ const createNotification = async (userId, message) => {
 };
 
 const createNotifications = async (userIds, message) => {
-  console.log('userIds', userIds);
   if (!userIds || userIds.length === 0) return;
 
   userIds.forEach(async (userId) => {
