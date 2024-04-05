@@ -18,6 +18,7 @@ const sendNotifications = (ws) => async (userId) => {
 };
 
 const createNotification = async (userId, message) => {
+  if (!userId || !message) return;
   // Créer une nouvelle notification
   const notification = new Notification({
     user_id: userId,
@@ -29,6 +30,14 @@ const createNotification = async (userId, message) => {
 
   // Envoyer la notification
   OrderSub.publish(`sendNotifications${userId}`, userId);
+};
+
+const createNotifications = async (userIds, message) => {
+  if (!userIds || userIds.length === 0) return;
+
+  userIds.forEach(async (userId) => {
+    await createNotification(userId, message);
+  });
 };
 
 const notificationSocketController = async (ws, req) => {
@@ -60,4 +69,4 @@ const notificationController = {
   },
 };
 
-export { notificationSocketController, notificationController, createNotification };
+export { notificationSocketController, notificationController, createNotifications };

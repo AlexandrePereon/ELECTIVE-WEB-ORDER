@@ -2,7 +2,7 @@ import Order from '../models/orderModel.js';
 import Menu from '../models/menuModel.js';
 import Article from '../models/articleModel.js';
 import Restaurant from '../models/restaurantModel.js';
-import { createNotification } from './notificationController.js';
+import { createNotifications } from './notificationController.js';
 import { updatedMarketingData } from './marketingController.js';
 
 const orderController = {
@@ -67,7 +67,7 @@ const orderController = {
 
       // Notify via websocket
       const notificationMessage = `Nouvelle commande n°${neworder._id} pour un montant de ${neworder.total_price}€`;
-      createNotification(restaurant.createur_id, notificationMessage);
+      createNotifications([order.user_id, restaurant.createur_id], notificationMessage);
       updatedMarketingData(restaurantId);
 
       return res.status(200).json({ order: neworder._id, message: 'Commande créée avec succès' });
@@ -95,6 +95,14 @@ const orderController = {
         return res.status(400).send('Cette commande n\'appartient pas à ce restaurant');
       }
 
+      // find restaurant
+      const restaurant = await Restaurant.findById(restaurantId);
+
+      // Check if the restaurant exists
+      if (!restaurant) {
+        return res.status(404).send('Restaurant non trouvé');
+      }
+
       // Check if the order is not already accepted
       if (order.status !== 'En Attente') {
         return res.status(400).send('La commande n\'est pas en attente');
@@ -105,8 +113,8 @@ const orderController = {
       await order.save();
 
       // Notify via websocket
-      const notificationMessage = `Votre commande n°${order._id} a été acceptée`;
-      createNotification(order.user_id, notificationMessage);
+      const notificationMessage = `La commande n°${order._id} a été acceptée`;
+      createNotifications([order.user_id, restaurant.createur_id], notificationMessage);
       updatedMarketingData(restaurantId);
 
       return res.status(200).send('Commande acceptée avec succès');
@@ -134,6 +142,14 @@ const orderController = {
         return res.status(400).send('Cette commande n\'appartient pas à ce restaurant');
       }
 
+      // find restaurant
+      const restaurant = await Restaurant.findById(restaurantId);
+
+      // Check if the restaurant exists
+      if (!restaurant) {
+        return res.status(404).send('Restaurant non trouvé');
+      }
+
       // Check if the order is not already prepared
       if (order.status !== 'En préparation') {
         return res.status(400).send('La commande n\'est pas en préparation');
@@ -144,8 +160,8 @@ const orderController = {
       await order.save();
 
       // Notify via websocket
-      const notificationMessage = `Votre commande n°${order._id} à été préparée`;
-      createNotification(order.user_id, notificationMessage);
+      const notificationMessage = `La commande n°${order._id} à été préparée`;
+      createNotifications([order.user_id, restaurant.createur_id], notificationMessage);
       updatedMarketingData(restaurantId);
 
       return res.status(200).send('Commande préparée avec succès');
@@ -168,6 +184,14 @@ const orderController = {
         return res.status(404).send('Commande non trouvée');
       }
 
+      // find restaurant
+      const restaurant = await Restaurant.findById(order.restaurant_id);
+
+      // Check if the restaurant exists
+      if (!restaurant) {
+        return res.status(404).send('Restaurant non trouvé');
+      }
+
       // Check if the order is not already delivered
       if (order.status !== 'Préparée') {
         return res.status(400).send('La commande n\'est pas préparée');
@@ -180,8 +204,8 @@ const orderController = {
       await order.save();
 
       // Notify via websocket
-      const notificationMessage = `Votre commande n°${order._id} est en cours de livraison`;
-      createNotification(order.user_id, notificationMessage);
+      const notificationMessage = `La commande n°${order._id} est en cours de livraison`;
+      createNotifications([order.user_id, restaurant.createur_id, order.deliveryman_id], notificationMessage);
       updatedMarketingData(order.restaurant_id);
 
       return res.status(200).send('Commande en cours de livraison');
@@ -208,6 +232,14 @@ const orderController = {
         return res.status(400).send('Vous n\'êtes pas autorisé à effectuer cette action');
       }
 
+      // find restaurant
+      const restaurant = await Restaurant.findById(order.restaurant_id);
+
+      // Check if the restaurant exists
+      if (!restaurant) {
+        return res.status(404).send('Restaurant non trouvé');
+      }
+
       // Check if the order is not already delivered
       if (order.status !== 'En Livraison') {
         return res.status(400).send('La commande n\'est pas en livraison');
@@ -218,8 +250,8 @@ const orderController = {
       await order.save();
 
       // Notify via websocket
-      const notificationMessage = `Votre commande n°${order._id} a été livrée`;
-      createNotification(order.restaurant_id, notificationMessage);
+      const notificationMessage = `La commande n°${order._id} a été livrée`;
+      createNotifications([order.user_id, restaurant.createur_id, order.deliveryman_id], notificationMessage);
       updatedMarketingData(order.restaurant_id);
 
       return res.status(200).send('Commande livrée avec succès');
