@@ -835,4 +835,80 @@ orderRouter.get('/to-deliver', authMiddleware, isDeliverymanMiddleware, orderCon
  */
 orderRouter.get('/in-delivery', authMiddleware, isDeliverymanMiddleware, orderController.getOrdersInDelivery);
 
+/**
+ * @swagger
+ * /order/cancel:
+ *   delete:
+ *     summary: Cancel an order
+ *     description: This endpoint allows a user or a restaurant to cancel an order that is currently in 'En Attente' status. Users can only cancel their own orders, and restaurants can only cancel orders that belong to them.
+ *     tags: [Order]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - orderId
+ *             properties:
+ *               orderId:
+ *                 type: string
+ *                 description: The unique identifier of the order to be cancelled.
+ *                 example: '660fa7f629e4ad5a2180c6ba'
+ *     responses:
+ *       200:
+ *         description: Order successfully cancelled
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Commande annulée avec succès'
+ *       400:
+ *         description: You can no longer cancel this order, or You are not authorized to perform this action
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Vous ne pouvez plus annuler cette commande'
+ *       404:
+ *         description: Order not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Commande non trouvée'
+ *       403:
+ *         description: Not authorized to access this resource
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Vous n'avez pas le rôle nécessaire pour accéder à cette ressource."
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Internal server error'
+ */
+orderRouter.delete('/cancel', authMiddleware, isUserOrHasRestaurantMiddleware, orderController.cancel);
+
 export default orderRouter;

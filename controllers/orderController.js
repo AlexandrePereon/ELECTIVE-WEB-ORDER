@@ -263,9 +263,6 @@ const orderController = {
   },
   // GET /order/waiting
   getWaitingOrders: async (req, res) => {
-    // Get the waiting orders of the restaurant or the client
-    console.log(req.userData);
-
     const { restaurant } = req;
     const { id, role } = req.body.userData;
 
@@ -348,6 +345,52 @@ const orderController = {
       const orders = await Order.find({ deliveryman_id: id, status: 'En Livraison' }).sort({ date_ordered: 'desc' });
 
       return res.status(200).json({ orders });
+    } catch (error) {
+      return res.status(500).send('Internal server error');
+    }
+  },
+  // DELETE /order/cancel/:orderId
+  cancel: async (req, res) => {
+    const { restaurant } = req;
+    const { id, role } = req.body.userData;
+    const { orderId } = req.body;
+
+    try {
+      // Find the order
+      const order = await Order.findById(orderId);
+
+      // Check if the order exists
+      if (!order) {
+        return res.status(404).send('Commande non trouvée');
+      }
+
+      if (order.status !== 'En Attente') {
+        return res.status(400).send('Vous ne pouvez plus annuler cette commande');
+      }
+
+      if (role === 'user') {
+        // Check if the order is from the client
+        if (order.user_id.toString() !== id.toString()) {
+          return res.status(403).send('Vous n\'êtes pas autorisé à effectuer cette action');
+        }
+
+        // Update the order status
+        order.status = 'Annulée';
+        await order.save();
+      } else if (role === 'restaurant') {
+        // Check if the order is from the restaurant
+        if (order.restaurant_id.toString() !== restaurant._id.toString()) {
+          return res.status(400).send('Cette commande n\'appartient pas à ce restaurant');
+        }
+
+        // Update the order status
+        order.status = 'Annulée';
+        await order.save();
+      } else {
+        return res.status(403).send("Vous n'avez pas le rôle nécessaire pour accéder à cette ressource.");
+      }
+
+      return res.status(200).json({ message: 'Commande annulée avec succès' });
     } catch (error) {
       return res.status(500).send('Internal server error');
     }
