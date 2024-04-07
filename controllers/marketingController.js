@@ -39,7 +39,7 @@ const sendMarketingData = (ws) => async (restaurantID) => {
     }, {});
 
     const totalPriceExcludingCancelled = Orders.reduce((acc, order) => {
-      if (order.status !== 'Annulée') {
+      if (order.status !== 'Annulée' && order.status !== 'En attente') {
         // La valeur de order.total_price est une chaîne, donc nous devons la convertir en nombre
         return acc + Number(order.total_price);
       }
