@@ -173,7 +173,7 @@ const orderController = {
   deliver: async (req, res) => {
     // The deliveryman delivers the order
     const { orderId } = req.body;
-    const deliverymanId = req.deliveryman._id;
+    const deliverymanId = req.body.userData.id;
 
     try {
       // Find the order
@@ -199,7 +199,6 @@ const orderController = {
 
       // Update the order status
       order.status = 'En Livraison';
-      order.date_delivered = new Date();
       order.deliveryman_id = deliverymanId;
       await order.save();
 
@@ -214,9 +213,10 @@ const orderController = {
     }
   },
   // PUT /order/receive
-  receive: async (req, res) => {
-    // The client receives the order
+  delivered: async (req, res) => {
+    // The deliveryman has delivered the order
     const { orderId } = req.body;
+    const deliverymanId = req.body.userData.id;
 
     try {
       // Find the order
@@ -227,8 +227,8 @@ const orderController = {
         return res.status(404).send('Commande non trouvée');
       }
 
-      // Check if the user is the owner of the order
-      if (order.user_id.toString() !== req.userData.id.toString()) {
+      // Check if the deliveryman is the one who has to deliver the order
+      if (order.deliveryman_id !== deliverymanId) {
         return res.status(400).send('Vous n\'êtes pas autorisé à effectuer cette action');
       }
 
@@ -247,6 +247,7 @@ const orderController = {
 
       // Update the order status
       order.status = 'Livrée';
+      order.date_delivered = new Date();
       await order.save();
 
       // Notify via websocket
@@ -255,6 +256,98 @@ const orderController = {
       updatedMarketingData(order.restaurant_id);
 
       return res.status(200).send('Commande livrée avec succès');
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send('Internal server error');
+    }
+  },
+  // GET /order/waiting
+  getWaitingOrders: async (req, res) => {
+    // Get the waiting orders of the restaurant or the client
+    console.log(req.userData);
+
+    const { restaurant } = req;
+    const { id, role } = req.body.userData;
+
+    try {
+      let orders;
+
+      if (role === 'restaurant') {
+        // Get the waiting orders of the restaurant
+        orders = await Order.find({ restaurant_id: restaurant._id, status: 'En Attente' }).sort({ date_ordered: 'desc' });
+      } else if (role === 'user') {
+        // Get the waiting orders of the client
+        orders = await Order.find({ user_id: id, status: 'En Attente' }).sort({ date_ordered: 'desc' });
+      }
+
+      return res.status(200).json({ orders });
+    } catch (error) {
+      return res.status(500).send('Internal server error');
+    }
+  },
+  // GET /order/active
+  getActiveOrders: async (req, res) => {
+    // Get the active orders of the restaurant or the client
+    const { restaurant } = req;
+    const { id, role } = req.body.userData;
+
+    try {
+      let orders;
+
+      if (role === 'restaurant') {
+        // Get the active orders of the restaurant
+        orders = await Order.find({ restaurant_id: restaurant._id, status: { $in: ['En préparation', 'Préparée', 'En Livraison'] } }).sort({ date_ordered: 'desc' });
+      } else if (role === 'user') {
+        // Get the active orders of the client
+        orders = await Order.find({ user_id: id, status: { $in: ['En préparation', 'Préparée', 'En Livraison'] } }).sort({ date_ordered: 'desc' });
+      }
+
+      return res.status(200).json({ orders });
+    } catch (error) {
+      return res.status(500).send('Internal server error');
+    }
+  },
+  // GET /order/inactive
+  getInactiveOrders: async (req, res) => {
+    // Get the inactive orders of the restaurant or the client
+    const { restaurant } = req;
+    const { id, role } = req.body.userData;
+
+    try {
+      let orders;
+
+      if (role === 'restaurant') {
+        // Get the inactive orders of the restaurant
+        orders = await Order.find({ restaurant_id: restaurant._id, status: { $in: ['Livrée', 'Annulée'] } }).sort({ date_ordered: 'desc' });
+      } else if (role === 'user') {
+        // Get the inactive orders of the client
+        orders = await Order.find({ user_id: id, status: { $in: ['Livrée', 'Annulée'] } }).sort({ date_ordered: 'desc' });
+      }
+
+      return res.status(200).json({ orders });
+    } catch (error) {
+      return res.status(500).send('Internal server error');
+    }
+  },
+  // GET /order/to-deliver
+  getOrdersToDeliver: async (req, res) => {
+    // Get the orders ready to deliver for a deliveryman
+    try {
+      const orders = await Order.find({ status: 'Préparée' }).sort({ date_ordered: 'desc' });
+
+      return res.status(200).json({ orders });
+    } catch (error) {
+      return res.status(500).send('Internal server error');
+    }
+  },
+  // GET /order/in-delivery
+  getOrdersInDelivery: async (req, res) => {
+    const { id } = req.body.userData;
+
+    try {
+      const orders = await Order.find({ deliveryman_id: id, status: 'En Livraison' }).sort({ date_ordered: 'desc' });
+
+      return res.status(200).json({ orders });
     } catch (error) {
       return res.status(500).send('Internal server error');
     }
