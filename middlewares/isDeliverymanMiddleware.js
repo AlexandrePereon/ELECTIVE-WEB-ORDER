@@ -1,4 +1,4 @@
-export default async function isdDeliverymanMiddleware(req, res, next) {
+export default async function isDeliverymanMiddleware(req, res, next) {
   const { role } = req.body.userData;
 
   if (role === 'deliveryman') {

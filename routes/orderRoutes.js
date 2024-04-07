@@ -4,7 +4,8 @@ import isUserMiddleware from '../middlewares/isUserMiddleware.js';
 import isRestaurantMiddleware from '../middlewares/isRestaurantMiddleware.js';
 import hasRestaurantMiddleware from '../middlewares/hasRestaurantMiddleware.js';
 import orderController from '../controllers/orderController.js';
-import isdDeliverymanMiddleware from '../middlewares/isDeliverymanMiddleware.js';
+import isDeliverymanMiddleware from '../middlewares/isDeliverymanMiddleware.js';
+import isUserOrHasRestaurantMiddleware from '../middlewares/isUserOrHasRestaurantMiddleware.js';
 
 const orderRouter = express.Router();
 
@@ -300,14 +301,14 @@ orderRouter.put('/prepared', authMiddleware, isRestaurantMiddleware, hasRestaura
  *                   description: Detailed error message.
  *                   example: 'Internal server error'
  */
-orderRouter.put('/deliver', authMiddleware, isdDeliverymanMiddleware, orderController.deliver);
+orderRouter.put('/deliver', authMiddleware, isDeliverymanMiddleware, orderController.deliver);
 
 /**
  * @swagger
- * /order/receive:
+ * /order/delivered:
  *   put:
  *     summary: Mark an order as received
- *     description: This endpoint allows a client to mark an order as 'Livrée'. It verifies the order exists, belongs to the client making the request, and is in the 'En Livraison' state before updating its status to 'Livrée'.
+ *     description: This endpoint allows a deliveryman to mark an order as received. It verifies the order exists, is marked as 'En Livraison', and updates the status to 'Livrée'.
  *     tags: [Order]
  *     security:
  *       - BearerAuth: []
@@ -369,6 +370,469 @@ orderRouter.put('/deliver', authMiddleware, isdDeliverymanMiddleware, orderContr
  *                   description: Detailed error message.
  *                   example: 'Internal server error'
  */
-orderRouter.put('/receive', authMiddleware, isUserMiddleware, orderController.receive);
+orderRouter.put('/delivered', authMiddleware, isDeliverymanMiddleware, orderController.delivered);
+
+/**
+ * @swagger
+ * /order/waiting:
+ *   get:
+ *     summary: Retrieve waiting orders
+ *     description: This endpoint allows a restaurant or a client to retrieve their waiting orders. If the user is a restaurant, it returns orders waiting in the restaurant. If the user is a client, it returns the client's waiting orders.
+ *     tags: [Order]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Waiting orders successfully retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: '660fa7f629e4ad5a2180c6ba'
+ *                       user_id:
+ *                         type: integer
+ *                         example: 4
+ *                       restaurant_id:
+ *                         type: string
+ *                         example: '660e5a7aaf4d159011308c79'
+ *                       date_ordered:
+ *                         type: string
+ *                         format: date-time
+ *                         example: '2024-04-05T07:27:50.903Z'
+ *                       status:
+ *                         type: string
+ *                         example: 'Préparée'
+ *                       menus:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             menu_name:
+ *                               type: string
+ *                               example: 'Menu ABC'
+ *                             articles:
+ *                               type: array
+ *                               items:
+ *                                 type: object
+ *                                 properties:
+ *                                   article_name:
+ *                                     type: string
+ *                                     example: 'Article XYZ'
+ *                                   _id:
+ *                                     type: string
+ *                                     example: '660fa7f629e4ad5a2180c6bc'
+ *                             menu_price:
+ *                               type: string
+ *                               example: '25.99'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bb'
+ *                       articles:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             article_name:
+ *                               type: string
+ *                               example: 'Article XYZ'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bc'
+ *                       total_price:
+ *                         type: string
+ *                         description: The total price of the order.
+ *                         example: '25.99'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Detailed error message.
+ *                   example: 'Internal server error'
+ */
+orderRouter.get('/waiting', authMiddleware, isUserOrHasRestaurantMiddleware, orderController.getWaitingOrders);
+
+/**
+ * @swagger
+ * /order/active:
+ *   get:
+ *     summary: Retrieve active orders
+ *     description: This endpoint allows a restaurant or a client to retrieve their active orders. Active orders include those in preparation, prepared, or currently being delivered. The orders returned depend on the role of the requester (restaurant or user).
+ *     tags: [Order]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Active orders successfully retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: '660fa7f629e4ad5a2180c6ba'
+ *                       user_id:
+ *                         type: integer
+ *                         example: 4
+ *                       restaurant_id:
+ *                         type: string
+ *                         example: '660e5a7aaf4d159011308c79'
+ *                       date_ordered:
+ *                         type: string
+ *                         format: date-time
+ *                         example: '2024-04-05T07:27:50.903Z'
+ *                       status:
+ *                         type: string
+ *                         example: 'Préparée'
+ *                       menus:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             menu_name:
+ *                               type: string
+ *                               example: 'Menu ABC'
+ *                             articles:
+ *                               type: array
+ *                               items:
+ *                                 type: object
+ *                                 properties:
+ *                                   article_name:
+ *                                     type: string
+ *                                     example: 'Article XYZ'
+ *                                   _id:
+ *                                     type: string
+ *                                     example: '660fa7f629e4ad5a2180c6bc'
+ *                             menu_price:
+ *                               type: string
+ *                               example: '25.99'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bb'
+ *                       articles:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             article_name:
+ *                               type: string
+ *                               example: 'Article XYZ'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bc'
+ *                       total_price:
+ *                         type: string
+ *                         description: The total price of the order.
+ *                         example: '25.99'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Detailed error message.
+ *                   example: 'Internal server error'
+ */
+orderRouter.get('/active', authMiddleware, isUserOrHasRestaurantMiddleware, orderController.getActiveOrders);
+
+/**
+ * @swagger
+ * /order/inactive:
+ *   get:
+ *     summary: Retrieve inactive orders
+ *     description: This endpoint allows a restaurant or a client to retrieve their inactive orders. Inactive orders include those that have been received or canceled. The orders returned depend on the role of the requester (restaurant or user).
+ *     tags: [Order]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Inactive orders successfully retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: '660fa7f629e4ad5a2180c6ba'
+ *                       user_id:
+ *                         type: integer
+ *                         example: 4
+ *                       restaurant_id:
+ *                         type: string
+ *                         example: '660e5a7aaf4d159011308c79'
+ *                       date_ordered:
+ *                         type: string
+ *                         format: date-time
+ *                         example: '2024-04-05T07:27:50.903Z'
+ *                       status:
+ *                         type: string
+ *                         example: 'Préparée'
+ *                       menus:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             menu_name:
+ *                               type: string
+ *                               example: 'Menu ABC'
+ *                             articles:
+ *                               type: array
+ *                               items:
+ *                                 type: object
+ *                                 properties:
+ *                                   article_name:
+ *                                     type: string
+ *                                     example: 'Article XYZ'
+ *                                   _id:
+ *                                     type: string
+ *                                     example: '660fa7f629e4ad5a2180c6bc'
+ *                             menu_price:
+ *                               type: string
+ *                               example: '25.99'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bb'
+ *                       articles:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             article_name:
+ *                               type: string
+ *                               example: 'Article XYZ'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bc'
+ *                       total_price:
+ *                         type: string
+ *                         description: The total price of the order.
+ *                         example: '25.99'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Detailed error message.
+ *                   example: 'Internal server error'
+ */
+orderRouter.get('/inactive', authMiddleware, isUserOrHasRestaurantMiddleware, orderController.getInactiveOrders);
+
+/**
+ * @swagger
+ * /order/to-deliver:
+ *   get:
+ *     summary: Retrieve orders ready to deliver
+ *     description: This endpoint allows a deliveryman to retrieve orders that are ready to be delivered. It returns orders with the status 'Préparée', sorted by the date they were ordered in descending order. Each order includes details such as menu items and total price.
+ *     tags: [Order]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Orders ready to deliver successfully retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: '660fa7f629e4ad5a2180c6ba'
+ *                       user_id:
+ *                         type: integer
+ *                         example: 4
+ *                       restaurant_id:
+ *                         type: string
+ *                         example: '660e5a7aaf4d159011308c79'
+ *                       date_ordered:
+ *                         type: string
+ *                         format: date-time
+ *                         example: '2024-04-05T07:27:50.903Z'
+ *                       status:
+ *                         type: string
+ *                         example: 'Préparée'
+ *                       menus:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             menu_name:
+ *                               type: string
+ *                               example: 'Menu ABC'
+ *                             articles:
+ *                               type: array
+ *                               items:
+ *                                 type: object
+ *                                 properties:
+ *                                   article_name:
+ *                                     type: string
+ *                                     example: 'Article XYZ'
+ *                                   _id:
+ *                                     type: string
+ *                                     example: '660fa7f629e4ad5a2180c6bc'
+ *                             menu_price:
+ *                               type: string
+ *                               example: '25.99'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bb'
+ *                       articles:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             article_name:
+ *                               type: string
+ *                               example: 'Article XYZ'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bc'
+ *                       total_price:
+ *                         type: string
+ *                         description: The total price of the order.
+ *                         example: '25.99'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Detailed error message.
+ *                   example: 'Internal server error'
+ */
+orderRouter.get('/to-deliver', authMiddleware, isDeliverymanMiddleware, orderController.getOrdersToDeliver);
+
+/**
+ * @swagger
+ * /order/in-delivery:
+ *   get:
+ *     summary: Retrieve orders currently being delivered
+ *     description: This endpoint allows a deliveryman to retrieve orders they are currently delivering. It returns orders with the status 'En Livraison', sorted by the date they were ordered in descending order.
+ *     tags: [Order]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Orders in delivery successfully retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: '660fa7f629e4ad5a2180c6ba'
+ *                       user_id:
+ *                         type: integer
+ *                         example: 4
+ *                       restaurant_id:
+ *                         type: string
+ *                         example: '660e5a7aaf4d159011308c79'
+ *                       date_ordered:
+ *                         type: string
+ *                         format: date-time
+ *                         example: '2024-04-05T07:27:50.903Z'
+ *                       status:
+ *                         type: string
+ *                         example: 'Préparée'
+ *                       menus:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             menu_name:
+ *                               type: string
+ *                               example: 'Menu ABC'
+ *                             articles:
+ *                               type: array
+ *                               items:
+ *                                 type: object
+ *                                 properties:
+ *                                   article_name:
+ *                                     type: string
+ *                                     example: 'Article XYZ'
+ *                                   _id:
+ *                                     type: string
+ *                                     example: '660fa7f629e4ad5a2180c6bc'
+ *                             menu_price:
+ *                               type: string
+ *                               example: '25.99'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bb'
+ *                       articles:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             article_name:
+ *                               type: string
+ *                               example: 'Article XYZ'
+ *                             _id:
+ *                               type: string
+ *                               example: '660fa7f629e4ad5a2180c6bc'
+ *                       deliveryman_id:
+ *                         type: integer
+ *                         example: 8
+ *                       total_price:
+ *                         type: string
+ *                         description: The total price of the order.
+ *                         example: '25.99'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Detailed error message.
+ *                   example: 'Internal server error'
+ */
+orderRouter.get('/in-delivery', authMiddleware, isDeliverymanMiddleware, orderController.getOrdersInDelivery);
 
 export default orderRouter;
