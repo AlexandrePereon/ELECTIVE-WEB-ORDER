@@ -212,7 +212,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // PUT /order/receive
+  // PUT /order/delivered
   delivered: async (req, res) => {
     // The deliveryman has delivered the order
     const { orderId } = req.body;
@@ -389,6 +389,11 @@ const orderController = {
       } else {
         return res.status(403).send("Vous n'avez pas le rôle nécessaire pour accéder à cette ressource.");
       }
+
+      // Notify via websocket
+      const notificationMessage = `La commande n°${order._id} a été annulée`;
+      createNotifications([order.user_id, restaurant.createur_id], notificationMessage);
+      updatedMarketingData(order.restaurant_id);
 
       return res.status(200).json({ message: 'Commande annulée avec succès' });
     } catch (error) {
