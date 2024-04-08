@@ -11,7 +11,7 @@ const orderRouter = express.Router();
 
 /**
  * @swagger
- * /order/create/:
+ * /api-order/create/:
  *   post:
  *     summary: Create a new order
  *     description: This endpoint allows the creation of a new order including specified menus and articles within a particular restaurant. It ensures that menus and articles are provided, validates the existence of the restaurant, checks if all items belong to the same restaurant, calculates the total price, and finally, creates and saves the new order.
@@ -98,7 +98,7 @@ orderRouter.post('/create', authMiddleware, isUserMiddleware, orderController.cr
 
 /**
  * @swagger
- * /order/accept/:
+ * /api-order/accept/:
  *   put:
  *     summary: Accept an order
  *     description: This endpoint allows a restaurant to accept an order by its ID. It verifies that the order exists, checks if the order belongs to the restaurant making the request, and ensures the order has not been previously accepted before updating its status.
@@ -167,7 +167,7 @@ orderRouter.put('/accept', authMiddleware, isRestaurantMiddleware, hasRestaurant
 
 /**
  * @swagger
- * /order/prepared:
+ * /api-order/prepared:
  *   put:
  *     summary: Mark an order as prepared
  *     description: This endpoint allows a restaurant to mark an order as prepared. It verifies that the order exists, checks if the order belongs to the restaurant making the request, and ensures the order is in the 'En préparation' state before updating its status to 'Préparée'.
@@ -236,7 +236,7 @@ orderRouter.put('/prepared', authMiddleware, isRestaurantMiddleware, hasRestaura
 
 /**
  * @swagger
- * /order/deliver:
+ * /api-order/deliver:
  *   put:
  *     summary: Deliver an order
  *     description: This endpoint allows a deliveryman to mark an order as 'En Livraison'. It verifies the order exists, is marked as 'Préparée', and updates the status to 'En Livraison'.
@@ -305,7 +305,7 @@ orderRouter.put('/deliver', authMiddleware, isDeliverymanMiddleware, orderContro
 
 /**
  * @swagger
- * /order/delivered:
+ * /api-order/delivered:
  *   put:
  *     summary: Mark an order as received
  *     description: This endpoint allows a deliveryman to mark an order as received. It verifies the order exists, is marked as 'En Livraison', and updates the status to 'Livrée'.
@@ -374,7 +374,7 @@ orderRouter.put('/delivered', authMiddleware, isDeliverymanMiddleware, orderCont
 
 /**
  * @swagger
- * /order/waiting:
+ * /api-order/waiting:
  *   get:
  *     summary: Retrieve waiting orders
  *     description: This endpoint allows a restaurant or a client to retrieve their waiting orders. If the user is a restaurant, it returns orders waiting in the restaurant. If the user is a client, it returns the client's waiting orders.
@@ -466,7 +466,7 @@ orderRouter.get('/waiting', authMiddleware, isUserOrHasRestaurantMiddleware, ord
 
 /**
  * @swagger
- * /order/active:
+ * /api-order/active:
  *   get:
  *     summary: Retrieve active orders
  *     description: This endpoint allows a restaurant or a client to retrieve their active orders. Active orders include those in preparation, prepared, or currently being delivered. The orders returned depend on the role of the requester (restaurant or user).
@@ -558,7 +558,7 @@ orderRouter.get('/active', authMiddleware, isUserOrHasRestaurantMiddleware, orde
 
 /**
  * @swagger
- * /order/inactive:
+ * /api-order/inactive:
  *   get:
  *     summary: Retrieve inactive orders
  *     description: This endpoint allows a restaurant or a client to retrieve their inactive orders. Inactive orders include those that have been received or canceled. The orders returned depend on the role of the requester (restaurant or user).
@@ -650,7 +650,7 @@ orderRouter.get('/inactive', authMiddleware, isUserOrHasRestaurantMiddleware, or
 
 /**
  * @swagger
- * /order/to-deliver:
+ * /api-order/to-deliver:
  *   get:
  *     summary: Retrieve orders ready to deliver
  *     description: This endpoint allows a deliveryman to retrieve orders that are ready to be delivered. It returns orders with the status 'Préparée', sorted by the date they were ordered in descending order. Each order includes details such as menu items and total price.
@@ -742,7 +742,7 @@ orderRouter.get('/to-deliver', authMiddleware, isDeliverymanMiddleware, orderCon
 
 /**
  * @swagger
- * /order/in-delivery:
+ * /api-order/in-delivery:
  *   get:
  *     summary: Retrieve orders currently being delivered
  *     description: This endpoint allows a deliveryman to retrieve orders they are currently delivering. It returns orders with the status 'En Livraison', sorted by the date they were ordered in descending order.
@@ -837,7 +837,7 @@ orderRouter.get('/in-delivery', authMiddleware, isDeliverymanMiddleware, orderCo
 
 /**
  * @swagger
- * /order/cancel:
+ * /api-order/cancel:
  *   delete:
  *     summary: Cancel an order
  *     description: This endpoint allows a user or a restaurant to cancel an order that is currently in 'En Attente' status. Users can only cancel their own orders, and restaurants can only cancel orders that belong to them.
