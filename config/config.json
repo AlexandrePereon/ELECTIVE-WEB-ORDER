@@ -7,12 +7,12 @@
     "PORT": 3001,
     "MONGODB_URI": "mongodb://localhost:27017/CesiEat",
     "BASE_URI": "http://localhost:3001",
-    "BASE_ENDPOINT": "/order"
+    "BASE_ENDPOINT": "/api/order"
   },
   "production": {
     "PORT": 3001,
     "MONGODB_URI": "mongodb://mongo:27017/CesiEat",
     "BASE_URI": "http://app.localhost",
-    "BASE_ENDPOINT": "/order"
+    "BASE_ENDPOINT": "/api//order"
   }
 }
