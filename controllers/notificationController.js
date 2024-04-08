@@ -53,7 +53,7 @@ const notificationSocketController = async (ws, req) => {
 };
 
 const notificationController = {
-// PUT /order/notified
+// PUT /api-order/notified
   notified: async (req, res) => {
   // Change all notifications from a user to seen
     const { id } = req.body.userData;

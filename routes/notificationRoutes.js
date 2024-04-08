@@ -11,7 +11,7 @@ notificationRouter.ws('/notification', authSocketMiddleware, notificationSocketC
 
 /**
  * @swagger
- * /order/notified:
+ * /api-order/notified:
  *   put:
  *     summary: Mark all notifications as seen
  *     description: This endpoint allows a user to mark all their notifications as seen. It updates the status of all notifications associated with the user to indicate they have been viewed.

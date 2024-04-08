@@ -6,7 +6,7 @@ import { createNotifications } from './notificationController.js';
 import { updatedMarketingData } from './marketingController.js';
 
 const orderController = {
-  // POST /order/create
+  // POST /api-order/create
   create: async (req, res) => {
     // Get the list of menus and articles, from the request
     const { menus, articles, restaurantId } = req.body;
@@ -75,7 +75,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // PUT /order/accept
+  // PUT /api-order/accept
   accept: async (req, res) => {
     // The restaurant accepts the order
     const { orderId } = req.body;
@@ -122,7 +122,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // PUT /order/prepared
+  // PUT /api-order/prepared
   prepared: async (req, res) => {
     // The restaurant has prepared the order
     const { orderId } = req.body;
@@ -169,7 +169,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // PUT /order/deliver
+  // PUT /api-order/deliver
   deliver: async (req, res) => {
     // The deliveryman delivers the order
     const { orderId } = req.body;
@@ -212,7 +212,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // PUT /order/delivered
+  // PUT /api-order/delivered
   delivered: async (req, res) => {
     // The deliveryman has delivered the order
     const { orderId } = req.body;
@@ -261,7 +261,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // GET /order/waiting
+  // GET /api-order/waiting
   getWaitingOrders: async (req, res) => {
     const { restaurant } = req;
     const { id, role } = req.body.userData;
@@ -282,7 +282,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // GET /order/active
+  // GET /api-order/active
   getActiveOrders: async (req, res) => {
     // Get the active orders of the restaurant or the client
     const { restaurant } = req;
@@ -304,7 +304,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // GET /order/inactive
+  // GET /api-order/inactive
   getInactiveOrders: async (req, res) => {
     // Get the inactive orders of the restaurant or the client
     const { restaurant } = req;
@@ -326,7 +326,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // GET /order/to-deliver
+  // GET /api-order/to-deliver
   getOrdersToDeliver: async (req, res) => {
     // Get the orders ready to deliver for a deliveryman
     try {
@@ -337,7 +337,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // GET /order/in-delivery
+  // GET /api-order/in-delivery
   getOrdersInDelivery: async (req, res) => {
     const { id } = req.body.userData;
 
@@ -349,7 +349,7 @@ const orderController = {
       return res.status(500).send('Internal server error');
     }
   },
-  // DELETE /order/cancel/:orderId
+  // DELETE /api-order/cancel/:orderId
   cancel: async (req, res) => {
     const { restaurant } = req;
     const { id, role } = req.body.userData;
