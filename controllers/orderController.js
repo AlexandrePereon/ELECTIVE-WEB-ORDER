@@ -244,6 +244,7 @@ const orderController = {
       if (order.status !== 'En Livraison') {
         return res.status(400).send('La commande n\'est pas en livraison');
       }
+      
 
       // Update the order status
       order.status = 'Livrée';
