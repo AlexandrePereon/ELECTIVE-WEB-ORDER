@@ -62,9 +62,9 @@ const notificationController = {
     // Find the notifications
       await Notification.updateMany({ user_id: id, seen: null }, { seen: new Date() });
 
-      return res.status(200).send('Notifications marquées comme lues');
+      return res.status(200).json({ message: 'Notifications marquées comme lues' });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Erreur lors de la mise à jour des notifications' });
     }
   },
 };

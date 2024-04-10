@@ -10,6 +10,6 @@ export default async function authMiddleware(req, res, next) {
     req.body.userData = userData;
     next();
   } else {
-    res.status(400).send('No user data provided');
+    res.status(400).json({ message: 'No user data provided' });
   }
 }

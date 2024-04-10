@@ -13,7 +13,7 @@ const orderController = {
 
     // Check if the menus or articles are not empty
     if (!menus.length && !articles.length) {
-      return res.status(400).send('Menus ou articles non fournis');
+      return res.status(400).json({ message: 'Veuillez sélectionner au moins un menu ou un article' });
     }
 
     try {
@@ -22,7 +22,7 @@ const orderController = {
 
       // Check if the restaurant exists
       if (!restaurant) {
-        return res.status(404).send('Restaurant non trouvé');
+        return res.status(404).json({ message: 'Restaurant non trouvé' });
       }
 
       // Get the menus and articles by their IDs and the restaurant
@@ -35,7 +35,7 @@ const orderController = {
 
       // Check if all products are from the same restaurant
       if (menusRestaurant.length !== new Set(menus).size || articlesRestaurant.length !== new Set(articles).size) {
-        return res.status(400).send('Tous les produits ne sont pas du même restaurant');
+        return res.status(400).json({ message: 'Tous les produits ne sont pas du même restaurant' });
       }
 
       const transformedMenus = menusRestaurant.map((menu) => ({
@@ -72,7 +72,7 @@ const orderController = {
 
       return res.status(200).json({ order: neworder._id, message: 'Commande créée avec succès' });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // PUT /api-order/accept
@@ -87,12 +87,12 @@ const orderController = {
 
       // Check if the order exists
       if (!order) {
-        return res.status(404).send('Commande non trouvée');
+        return res.status(404).json({ message: 'Commande non trouvée' });
       }
 
       // Check if the order is from the same restaurant
       if (order.restaurant_id.toString() !== restaurantId.toString()) {
-        return res.status(400).send('Cette commande n\'appartient pas à ce restaurant');
+        return res.status(400).json({ message: 'Cette commande n\'appartient pas à ce restaurant' });
       }
 
       // find restaurant
@@ -100,12 +100,12 @@ const orderController = {
 
       // Check if the restaurant exists
       if (!restaurant) {
-        return res.status(404).send('Restaurant non trouvé');
+        return res.status(404).json({ message: 'Restaurant non trouvé' });
       }
 
       // Check if the order is not already accepted
       if (order.status !== 'En Attente') {
-        return res.status(400).send('La commande n\'est pas en attente');
+        return res.status(400).json({ message: 'La commande n\'est pas en attente' });
       }
 
       // Update the order status
@@ -117,9 +117,9 @@ const orderController = {
       createNotifications([order.user_id, restaurant.createur_id], notificationMessage);
       updatedMarketingData(restaurantId);
 
-      return res.status(200).send('Commande acceptée avec succès');
+      return res.status(200).json({ message: 'Commande acceptée avec succès' });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // PUT /api-order/prepared
@@ -134,12 +134,12 @@ const orderController = {
 
       // Check if the order exists
       if (!order) {
-        return res.status(404).send('Commande non trouvée');
+        return res.status(404).json({ message: 'Commande non trouvée' });
       }
 
       // Check if the order is from the same restaurant
       if (order.restaurant_id.toString() !== restaurantId.toString()) {
-        return res.status(400).send('Cette commande n\'appartient pas à ce restaurant');
+        return res.status(400).json({ message: 'Cette commande n\'appartient pas à ce restaurant' });
       }
 
       // find restaurant
@@ -147,12 +147,12 @@ const orderController = {
 
       // Check if the restaurant exists
       if (!restaurant) {
-        return res.status(404).send('Restaurant non trouvé');
+        return res.status(404).json({ message: 'Restaurant non trouvé' });
       }
 
       // Check if the order is not already prepared
       if (order.status !== 'En préparation') {
-        return res.status(400).send('La commande n\'est pas en préparation');
+        return res.status(400).json({ message: 'La commande n\'est pas en préparation' });
       }
 
       // Update the order status
@@ -164,9 +164,9 @@ const orderController = {
       createNotifications([order.user_id, restaurant.createur_id], notificationMessage);
       updatedMarketingData(restaurantId);
 
-      return res.status(200).send('Commande préparée avec succès');
+      return res.status(200).json({ message: 'Commande préparée avec succès' });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // PUT /api-order/deliver
@@ -181,7 +181,7 @@ const orderController = {
 
       // Check if the order exists
       if (!order) {
-        return res.status(404).send('Commande non trouvée');
+        return res.status(404).json({ message: 'Commande non trouvée' });
       }
 
       // find restaurant
@@ -189,12 +189,12 @@ const orderController = {
 
       // Check if the restaurant exists
       if (!restaurant) {
-        return res.status(404).send('Restaurant non trouvé');
+        return res.status(404).json({ message: 'Restaurant non trouvé' });
       }
 
       // Check if the order is not already delivered
       if (order.status !== 'Préparée') {
-        return res.status(400).send('La commande n\'est pas préparée');
+        return res.status(400).json({ message: 'La commande n\'est pas préparée' });
       }
 
       // Update the order status
@@ -207,9 +207,9 @@ const orderController = {
       createNotifications([order.user_id, restaurant.createur_id, order.deliveryman_id], notificationMessage);
       updatedMarketingData(order.restaurant_id);
 
-      return res.status(200).send('Commande en cours de livraison');
+      return res.status(200).json({ message: 'Commande en cours de livraison' });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // PUT /api-order/delivered
@@ -224,12 +224,12 @@ const orderController = {
 
       // Check if the order exists
       if (!order) {
-        return res.status(404).send('Commande non trouvée');
+        return res.status(404).json({ message: 'Commande non trouvée' });
       }
 
       // Check if the deliveryman is the one who has to deliver the order
       if (order.deliveryman_id !== deliverymanId) {
-        return res.status(400).send('Vous n\'êtes pas autorisé à effectuer cette action');
+        return res.status(400).json({ message: 'Vous n\'êtes pas autorisé à effectuer cette action' });
       }
 
       // find restaurant
@@ -237,14 +237,13 @@ const orderController = {
 
       // Check if the restaurant exists
       if (!restaurant) {
-        return res.status(404).send('Restaurant non trouvé');
+        return res.status(404).json({ message: 'Restaurant non trouvé' });
       }
 
       // Check if the order is not already delivered
       if (order.status !== 'En Livraison') {
-        return res.status(400).send('La commande n\'est pas en livraison');
+        return res.status(400).json({ message: 'La commande n\'est pas en livraison' });
       }
-      
 
       // Update the order status
       order.status = 'Livrée';
@@ -256,10 +255,10 @@ const orderController = {
       createNotifications([order.user_id, restaurant.createur_id, order.deliveryman_id], notificationMessage);
       updatedMarketingData(order.restaurant_id);
 
-      return res.status(200).send('Commande livrée avec succès');
+      return res.status(200).json({ message: 'Commande livrée avec succès' });
     } catch (error) {
       console.log(error);
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // GET /api-order/waiting
@@ -280,7 +279,7 @@ const orderController = {
 
       return res.status(200).json({ orders });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // GET /api-order/active
@@ -302,7 +301,7 @@ const orderController = {
 
       return res.status(200).json({ orders });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // GET /api-order/inactive
@@ -324,7 +323,7 @@ const orderController = {
 
       return res.status(200).json({ orders });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // GET /api-order/to-deliver
@@ -335,7 +334,7 @@ const orderController = {
 
       return res.status(200).json({ orders });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // GET /api-order/in-delivery
@@ -347,7 +346,7 @@ const orderController = {
 
       return res.status(200).json({ orders });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
   // DELETE /api-order/cancel/:orderId
@@ -362,17 +361,17 @@ const orderController = {
 
       // Check if the order exists
       if (!order) {
-        return res.status(404).send('Commande non trouvée');
+        return res.status(404).json({ message: 'Commande non trouvée' });
       }
 
       if (order.status !== 'En Attente') {
-        return res.status(400).send('Vous ne pouvez plus annuler cette commande');
+        return res.status(400).json({ message: 'Vous ne pouvez plus annuler cette commande' });
       }
 
       if (role === 'user') {
         // Check if the order is from the client
         if (order.user_id.toString() !== id.toString()) {
-          return res.status(403).send('Vous n\'êtes pas autorisé à effectuer cette action');
+          return res.status(403).json({ message: 'Vous n\'êtes pas autorisé à effectuer cette action' });
         }
 
         // Update the order status
@@ -381,14 +380,14 @@ const orderController = {
       } else if (role === 'restaurant') {
         // Check if the order is from the restaurant
         if (order.restaurant_id.toString() !== restaurant._id.toString()) {
-          return res.status(400).send('Cette commande n\'appartient pas à ce restaurant');
+          return res.status(400).json({ message: 'Cette commande n\'appartient pas à ce restaurant' });
         }
 
         // Update the order status
         order.status = 'Annulée';
         await order.save();
       } else {
-        return res.status(403).send("Vous n'avez pas le rôle nécessaire pour accéder à cette ressource.");
+        return res.status(403).json({ message: 'Vous n\'avez pas le rôle nécessaire pour accéder à cette ressource.' });
       }
 
       // Notify via websocket
@@ -398,7 +397,7 @@ const orderController = {
 
       return res.status(200).json({ message: 'Commande annulée avec succès' });
     } catch (error) {
-      return res.status(500).send('Internal server error');
+      return res.status(500).json({ message: 'Internal server error' });
     }
   },
 };
