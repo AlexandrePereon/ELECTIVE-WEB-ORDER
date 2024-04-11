@@ -29,33 +29,43 @@ const orderController = {
       const menusRestaurant = [...new Set(await Menu.find({ _id: { $in: menus }, restaurant_id: restaurantId }).populate('articles'))];
       const articlesRestaurant = [...new Set(await Article.find({ _id: { $in: articles }, restaurant_id: restaurantId }))];
 
-      // Sum the prices of the menus and articles
-      const menusPrice = menusRestaurant.reduce((acc, menu) => acc + menu.price, 0);
-      const articlesPrice = articlesRestaurant.reduce((acc, article) => acc + article.price, 0);
-
       // Check if all products are from the same restaurant
       if (menusRestaurant.length !== new Set(menus).size || articlesRestaurant.length !== new Set(articles).size) {
         return res.status(400).json({ message: 'Tous les produits ne sont pas du même restaurant' });
       }
 
+      const menusCount = menus.reduce((acc, menuId) => {
+        acc[menuId] = (acc[menuId] || 0) + 1;
+        return acc;
+      }, {});
+
       const transformedMenus = menusRestaurant.map((menu) => ({
-        menu_name: menu.name,
+        menu_name: menu.name + (menusCount[menu._id] > 1 ? ` x${menusCount[menu._id]}` : '' ),
         articles: menu.articles.map((article) => ({
           article_name: article.name,
         })),
-        menu_price: menu.price,
+        menu_price: menu.price * menusCount[menu._id]
       }));
 
+
+      const articleCounts = articles.reduce((acc, articleId) => {
+        acc[articleId] = (acc[articleId] || 0) + 1;
+        return acc;
+      }, {});
+
       const transformedArticles = articlesRestaurant.map((article) => ({
-        article_name: article.name,
-        article_price: article.price,
+        article_name: article.name + (articleCounts[article._id] > 1 ? ` x${articleCounts[article._id]}` : '' ),
+        article_price: article.price * articleCounts[article._id]
       }));
+
+      const totalMenusPrice = transformedMenus.reduce((total, menu) => total + menu.menu_price, 0);
+      const totalArticlesPrice = transformedArticles.reduce((total, article) => total + article.article_price, 0);
 
       // Create the order
       const order = new Order({
         restaurant_id: restaurantId,
         user_id: req.body.userData.id,
-        total_price: menusPrice + articlesPrice,
+        total_price: totalMenusPrice + totalArticlesPrice,
         date_ordered: new Date(),
         status: 'En Attente',
         menus: transformedMenus,
