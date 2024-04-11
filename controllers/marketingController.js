@@ -84,8 +84,11 @@ const marketingSocketController = async (ws) => {
 
   OrderSub.subscribe('marketingUpdated', sendMarketingData(ws));
 
-  ws.on('close', () => {
+  ws.on('close', (code, reason) => {
     OrderSub.unsubscribe('marketingUpdated', sendMarketingData(ws));
+
+    // Logging du code et de la raison de la fermeture
+    console.log(`WebSocket closed with code: ${code}, reason: ${reason}`);
   });
 };
 

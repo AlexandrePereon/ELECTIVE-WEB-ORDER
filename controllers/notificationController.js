@@ -47,8 +47,11 @@ const notificationSocketController = async (ws, req) => {
 
   OrderSub.subscribe(`sendNotifications${id}`, sendNotifications(ws));
 
-  ws.on('close', () => {
+  ws.on('close', (code, reason) => {
     OrderSub.unsubscribe(`sendNotifications${id}`, sendNotifications(ws));
+  
+    // Logging du code et de la raison de la fermeture
+    console.log(`WebSocket closed with code: ${code}, reason: ${reason}`);
   });
 };
 

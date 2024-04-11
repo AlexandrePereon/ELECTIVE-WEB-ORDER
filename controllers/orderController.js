@@ -351,9 +351,9 @@ const orderController = {
   },
   // DELETE /api-order/cancel/:orderId
   cancel: async (req, res) => {
-    const { restaurant } = req;
+    let { restaurant } = req;
     const { id, role } = req.body.userData;
-    const { orderId } = req.body;
+    const { orderId } = req.params;
 
     try {
       // Find the order
@@ -377,6 +377,9 @@ const orderController = {
         // Update the order status
         order.status = 'Annulée';
         await order.save();
+
+        restaurant = await Restaurant.findById(order.restaurant_id);
+
       } else if (role === 'restaurant') {
         // Check if the order is from the restaurant
         if (order.restaurant_id.toString() !== restaurant._id.toString()) {

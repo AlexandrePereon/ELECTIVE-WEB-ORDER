@@ -837,26 +837,20 @@ orderRouter.get('/in-delivery', authMiddleware, isDeliverymanMiddleware, orderCo
 
 /**
  * @swagger
- * /api-order/cancel:
+ * /api-order/cancel/{orderId}:
  *   delete:
  *     summary: Cancel an order
  *     description: This endpoint allows a user or a restaurant to cancel an order that is currently in 'En Attente' status. Users can only cancel their own orders, and restaurants can only cancel orders that belong to them.
  *     tags: [Order]
  *     security:
  *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - orderId
- *             properties:
- *               orderId:
- *                 type: string
- *                 description: The unique identifier of the order to be cancelled.
- *                 example: '660fa7f629e4ad5a2180c6ba'
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique identifier of the order to be cancelled.
  *     responses:
  *       200:
  *         description: Order successfully cancelled
@@ -909,6 +903,6 @@ orderRouter.get('/in-delivery', authMiddleware, isDeliverymanMiddleware, orderCo
  *                   type: string
  *                   example: 'Internal server error'
  */
-orderRouter.delete('/cancel', authMiddleware, isUserOrHasRestaurantMiddleware, orderController.cancel);
+orderRouter.delete('/cancel/:orderId', authMiddleware, isUserOrHasRestaurantMiddleware, orderController.cancel);
 
 export default orderRouter;
