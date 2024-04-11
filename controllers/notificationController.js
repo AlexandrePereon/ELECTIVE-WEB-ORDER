@@ -13,7 +13,7 @@ const sendNotifications = (ws) => async (userId) => {
   if (notifications && notifications.length > 0) {
     ws.send(JSON.stringify(notifications));
   } else {
-    ws.send('Pas de notifications');
+    ws.send(JSON.stringify('Pas de notifications'));
   }
 };
 
