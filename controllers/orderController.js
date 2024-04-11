@@ -40,13 +40,12 @@ const orderController = {
       }, {});
 
       const transformedMenus = menusRestaurant.map((menu) => ({
-        menu_name: menu.name + (menusCount[menu._id] > 1 ? ` x${menusCount[menu._id]}` : '' ),
+        menu_name: menu.name + (menusCount[menu._id] > 1 ? ` x${menusCount[menu._id]}` : ''),
         articles: menu.articles.map((article) => ({
           article_name: article.name,
         })),
-        menu_price: menu.price * menusCount[menu._id]
+        menu_price: menu.price * menusCount[menu._id],
       }));
-
 
       const articleCounts = articles.reduce((acc, articleId) => {
         acc[articleId] = (acc[articleId] || 0) + 1;
@@ -54,8 +53,8 @@ const orderController = {
       }, {});
 
       const transformedArticles = articlesRestaurant.map((article) => ({
-        article_name: article.name + (articleCounts[article._id] > 1 ? ` x${articleCounts[article._id]}` : '' ),
-        article_price: article.price * articleCounts[article._id]
+        article_name: article.name + (articleCounts[article._id] > 1 ? ` x${articleCounts[article._id]}` : ''),
+        article_price: article.price * articleCounts[article._id],
       }));
 
       const totalMenusPrice = transformedMenus.reduce((total, menu) => total + menu.menu_price, 0);
@@ -389,7 +388,6 @@ const orderController = {
         await order.save();
 
         restaurant = await Restaurant.findById(order.restaurant_id);
-
       } else if (role === 'restaurant') {
         // Check if the order is from the restaurant
         if (order.restaurant_id.toString() !== restaurant._id.toString()) {
